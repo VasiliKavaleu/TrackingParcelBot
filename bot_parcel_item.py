@@ -1,11 +1,10 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
-import telebot
-import config  
+import telebot 
 import re
 import os
 
-bot = telebot.TeleBot(config.token)
+bot = telebot.TeleBot(os.environ.get("TOKEN"))
 
 @bot.message_handler(content_types=['text'])
 def answer(message):
