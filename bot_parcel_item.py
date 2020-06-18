@@ -3,10 +3,10 @@ from bs4 import BeautifulSoup
 import telebot 
 import re
 import os
+from emoji import *
 
 bot = telebot.TeleBot(os.environ.get("TOKEN"))
-exclamation_emoji = u"\u2757"
-mobile_emoji = u"\U0001F4F2"
+
 
 @bot.message_handler(content_types=['text'])
 def answer(message):
@@ -15,7 +15,7 @@ def answer(message):
         parsel_from_ali = parsel(message.text)
         bot.send_message(message.from_user.id, parsel_from_ali.run())  
     else:
-        fault_masssage = 'Трек-номер не верный' + exclamation_emoji + 'Попробуйте еще раз' + mobile_emoji
+        fault_masssage = 'Трек-номер не верный' + exclamation_emoji + 'Попробуйте еще раз ' + mobile_emoji
         bot.send_message(message.from_user.id, fault_masssage)
 
 class parsel:
