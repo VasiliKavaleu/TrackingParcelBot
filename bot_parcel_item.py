@@ -13,7 +13,7 @@ def answer(message):
         parsel_from_ali = parsel(message.text)
         bot.send_message(message.from_user.id, parsel_from_ali.run())  
     else:
-        bot.send_message(message.from_user.id, 'Трек-номер не верный \xE2\x9D\x97 Попробуйте еще раз \xF0\x9F\x93\xB2 \xF0\x9F\x92\xBB')
+        bot.send_message(message.from_user.id, 'Трек-номер не верный u"\xE2\x9D\x97" Попробуйте еще раз u"\xF0\x9F\x93\xB2" u"\xF0\x9F\x92\xBB"')
 
 class parsel:
     def __init__(self, item_num):
