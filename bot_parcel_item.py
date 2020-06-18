@@ -5,6 +5,8 @@ import re
 import os
 
 bot = telebot.TeleBot(os.environ.get("TOKEN"))
+exclamation_emoji = u"\u2757"
+mobile_emoji = u"\U0001F4F2"
 
 @bot.message_handler(content_types=['text'])
 def answer(message):
@@ -13,7 +15,7 @@ def answer(message):
         parsel_from_ali = parsel(message.text)
         bot.send_message(message.from_user.id, parsel_from_ali.run())  
     else:
-        fault_masssage = 'Трек-номер не верный' + u"\xE2\x9D\x97" + 'Попробуйте еще раз' + u"\xF0\x9F\x93\xB2" + u"\xF0\x9F\x92\xBB"
+        fault_masssage = 'Трек-номер не верный' + exclamation_emoji + 'Попробуйте еще раз' + mobile_emoji
         bot.send_message(message.from_user.id, fault_masssage)
 
 class parsel:
