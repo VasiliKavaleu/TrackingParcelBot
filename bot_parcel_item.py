@@ -14,7 +14,8 @@ try:
     import config
     bot = telebot.TeleBot(config.token)
 except Exception:
-    bot = telebot.TeleBot(os.environ.get("TOKEN"))
+    token = os.environ.get("TOKEN")
+    bot = telebot.TeleBot(token)
     local_host = False
 else:
     local_host = True
@@ -116,7 +117,7 @@ if local_host == False:
     @server.route("/")
     def webhook():
         bot.remove_webhook()
-        bot.set_webhook(url="https://bot-parsel.herokuapp.com/") 
+        bot.set_webhook(url="https://bot-parsel.herokuapp.com/" + token) 
     server.run(host="0.0.0.0", port=os.environ.get('PORT', 80))
 else:
     bot.remove_webhook()
