@@ -21,7 +21,8 @@ else:
     local_host = True
 
 sources = {00:'https://posylka.net/parcel/', 11:'https://1track.ru/tracking/'}
-default_source = 11
+default_source = 00
+item_does_not_tracking = 0
 
 @bot.message_handler(regexp="Выбрать источник")
 def handle_message(message):
@@ -35,9 +36,7 @@ def handle_message(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
-    global default_source
     subbmit_msg = 'Изменения приняты ' + check + ' Спасибо за доверие' + sparkles
-    print(call.data)
     if call.data == "0":
         bot.send_message(call.message.chat.id, rf.answ0)
     elif call.data == "1":
@@ -58,18 +57,23 @@ def callback_worker(call):
         pass
 
 @bot.message_handler(content_types=['text'])
-def answer(message):       
+def answer(message):
     t = '[A-Z]{2}[0-9]{9}[A-Z]{2}'
-    if len(message.text) == 13 and re.match(t, message.text):  
+    if len(message.text) == 13 and re.match(t, message.text.upper()):  
         parsel_from_ali = GetInfo(message.text)
         proccesing_msg = 'Идет сбор информации..' + page + glass + globe
         bot.send_message(message.from_user.id, proccesing_msg)
-        bot.send_message(message.from_user.id, parsel_from_ali.run())  
+        main_result_for_user = parsel_from_ali.run()
+        if item_does_not_tracking == 0:
+            bot.send_message(message.from_user.id, main_result_for_user)
+        else:
+            bot.send_message(message.from_user.id, main_result_for_user, reply_markup=kb.result_returnd_without_info)
     else:
         fault_masssage = 'Трек-номер не верного формата' + exclamation_emoji + 'Попробуйте еще раз ' + mobile_emoji
-        bot.send_message(message.from_user.id, fault_masssage, reply_markup=kb.bottom_kb)
+        bot.send_message(message.from_user.id, fault_masssage, reply_markup=kb.wrong_answer)
 
 class GetInfo(Load, Parser):
+    global item_does_not_tracking
     result = ''
     def __init__(self, item_num):
         self.item_num = item_num
@@ -77,7 +81,6 @@ class GetInfo(Load, Parser):
     def run(self):
         if local_host:
             url = sources[default_source] + self.item_num
-            print(url)
             html_page = Load.on_local(self, url)
             if default_source == 00:
                 result = Parser.posylka(self, html_page)
@@ -94,7 +97,7 @@ class GetInfo(Load, Parser):
                 result = Parser.track_ru(self, html_page)
             else:
                 pass
-        return f'Результат по запросу - {self.item_num}' + arrow + '\n' + result 
+        return f'Результат по запросу - {self.item_num} ' + arrow + '\n' + result 
 
 
 if local_host == False:

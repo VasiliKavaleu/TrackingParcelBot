@@ -32,3 +32,11 @@ src2 = types.InlineKeyboardButton(text='1track.ru', callback_data='11')
 source_btn = types.InlineKeyboardMarkup()
 source_btn.add(src1)
 source_btn.add(src2)
+
+wrong_answer = types.InlineKeyboardMarkup()
+wrong_answer.add(btn1)
+wrong_answer.add(btn2)
+wrong_answer.add(btn3)
+
+result_returnd_without_info = types.InlineKeyboardMarkup()
+result_returnd_without_info.add(btn4)

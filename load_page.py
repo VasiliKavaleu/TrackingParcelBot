@@ -1,8 +1,10 @@
 import os
+import re
+from emoji import *
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException as WDE
 from bs4 import BeautifulSoup
-import re
+
 
 class Load:
     def on_local(self, url):
@@ -39,6 +41,7 @@ class Load:
 
 
 class Parser:
+    
     def track_ru(self, html):
         soup = BeautifulSoup(html, 'lxml')
         row_parsel = soup.select('div.show_nogroups')
@@ -56,27 +59,45 @@ class Parser:
         return self.result
 
     def posylka(self, html):
+        global item_does_not_tracking 
         soup = BeautifulSoup(html, 'lxml')
-        row_parsel = soup.find('ul', attrs={'class':'package-route-list'})
-        print(row_parsel)
-        points_of_arrivel = row_parsel.find_all('li')
-        points_of_arrivel_without_advert = points_of_arrivel[1:]
-        for point in points_of_arrivel_without_advert:
-            full_time = point.find('div', attrs='package-route-box-content').text.split()
-            month_time = full_time[1]
-            month = re.findall(r'[а-я]+', month_time)[0]
-            num_month = full_time[0]
+        if soup.find('div', attrs={'class':'package-status-header s3'}):
+            header = soup.find('div', attrs={'class':'package-status-header s3'}).text.strip()
 
-            route_info = point.find('div', attrs='package-route-info')
-            country = route_info.find('div', attrs='package-route-box-content').small.text
-            action = route_info.find('div', attrs='package-route-box-content').text.strip().strip(country)
+            delivery_info = soup.find('div', attrs={'class':'package-info-delivery'})
+            days = delivery_info.find('div', attrs={'class':'package-info-delivery-days-title'}).text.strip()
+            num_days = delivery_info.find('div', attrs={'class':'package-info-delivery-days-value'}).text.strip()
 
-            post_service = point.find('div', attrs='package-route-post-service').text.strip()
-            
-            self.result = self.result + num_month + ' ' + month + ' - ' + action + ' - ' + country + ' - ' + post_service + '\n'
-        print(self.result)
-        return self.result
+            estimated = delivery_info.find('div', attrs={'class':'package-info-delivery-target-title'}).text.strip()
+            estimated_time = delivery_info.find('div', attrs={'class':'package-info-delivery-target-value'}).text.strip()
 
+            row_parsel = soup.find('ul', attrs={'class':'package-route-list'})
+            points_of_arrivel = row_parsel.find_all('li')
+            points_of_arrivel_without_advert = points_of_arrivel[1:]
+            for point in points_of_arrivel_without_advert:
+                full_time = point.find('div', attrs='package-route-box-content').text.split()
+                month_time = full_time[1]
+                month = re.findall(r'[а-я]+', month_time)[0]
+                num_month = full_time[0]
+
+                route_info = point.find('div', attrs='package-route-info')
+                country = route_info.find('div', attrs='package-route-box-content').small.text
+                action = route_info.find('div', attrs='package-route-box-content').text.strip().strip(country)
+
+                post_service = point.find('div', attrs='package-route-post-service').text.strip()
+                
+                self.result = self.result + num_month + ' ' + month + ' - ' + action + ' - ' + country + ' - ' + post_service + '\n'
+
+            total_estimated_time = estimated + ': '+ estimated_time + postbox + '\n' + '\n'
+            total_info = '\n' + header + chip + plane + station + '\n' + days + ' ' + num_days + hourglass + '\n'
+            item_does_not_tracking = 0
+            return total_info +  total_estimated_time + self.result
+        else:
+            item_does_not_tracking = 1
+            header = soup.find('div', attrs={'class':'package-status-header s2'}).text.strip()
+            additional = soup.find('div', attrs={'class':'package-status-info-box'}).text.strip()
+            return header + warning + '\n' + additional + negative_cross_mark
+        
 
 # html = Load().on_local(url)
 # print(Parser().posylka(html))
