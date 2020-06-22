@@ -6,7 +6,6 @@ import re
 
 class Load:
     def on_local(self, url):
-        # full_url = url + track_num
         path = os.path.abspath('bot_parcel_item.py')
         base_dir = os.path.dirname(path)
         path_chromedriver = os.path.join(base_dir, 'chromedriver')
@@ -23,7 +22,6 @@ class Load:
             return requiredHtml
 
     def on_host(self, url):
-        # full_url = url + track_num
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
         chrome_options.add_argument("--headless")
@@ -32,11 +30,11 @@ class Load:
         driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
         driver.implicitly_wait(2)
         try:
-            browser.get(url)
+            driver.get(url)
         except WDE:
             print(WDE)
         else:
-            requiredHtml = browser.page_source 
+            requiredHtml = driver.page_source 
             return requiredHtml
 
 
@@ -79,10 +77,6 @@ class Parser:
         print(self.result)
         return self.result
 
-
-
-# url = 'https://posylka.net/parcel/ZA701299320LV'
-# num = 'ZA701299320LV'
 
 # html = Load().on_local(url)
 # print(Parser().posylka(html))

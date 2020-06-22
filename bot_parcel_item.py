@@ -3,11 +3,11 @@
 import telebot 
 import re
 import reference as rf
+import keyboard as kb
 from emoji import *
 from load_page import *
 from selenium import webdriver
 from telebot import types
-import keyboard as kb
 from flask import Flask, request
 
 try:
@@ -95,17 +95,6 @@ class GetInfo(Load, Parser):
             else:
                 pass
         return f'Результат по запросу - {self.item_num}' + arrow + '\n' + result 
-
-
-
-# bot.polling(none_stop=True)
-# while True:
-#     try:
-#         bot.polling(none_stop=True)
-#     except Exception as e:
-#         print(e)
-#         time.sleep(15)
-
 
 
 if local_host == False:
