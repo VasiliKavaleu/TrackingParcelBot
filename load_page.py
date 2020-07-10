@@ -1,13 +1,16 @@
 import os
 import re
-from emoji import *
+
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException as WDE
 from bs4 import BeautifulSoup
 
+from emoji import *
+
 
 class Load:
-    def on_local(self, url):
+    """Loading main page."""
+    def load_page_on_local(self, url):
         path = os.path.abspath('bot_parcel_item.py')
         base_dir = os.path.dirname(path)
         path_chromedriver = os.path.join(base_dir, 'chromedriver')
@@ -23,7 +26,7 @@ class Load:
             requiredHtml = browser.page_source 
             return requiredHtml
 
-    def on_host(self, url):
+    def load_page_on_host(self, url):
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
         chrome_options.add_argument("--headless")
@@ -41,8 +44,8 @@ class Load:
 
 
 class Parser:
-    
-    def track_ru(self, html):
+    """Getting info about post item."""
+    def get_info_from_track_ru(self, html):
         soup = BeautifulSoup(html, 'lxml')
         row_parsel = soup.select('div.show_nogroups')
         for point in row_parsel:  
@@ -58,7 +61,7 @@ class Parser:
                     self.result = self.result + time + ' ' + info_about_po + '\n'  
         return self.result
 
-    def posylka(self, html):
+    def get_info_from_posylka(self, html):
         global item_does_not_tracking 
         soup = BeautifulSoup(html, 'lxml')
         if soup.find('div', attrs={'class':'package-status-header s3'}):
@@ -94,10 +97,14 @@ class Parser:
             return total_info +  total_estimated_time + self.result
         else:
             item_does_not_tracking = 1
-            header = soup.find('div', attrs={'class':'package-status-header s2'}).text.strip()
-            additional = soup.find('div', attrs={'class':'package-status-info-box'}).text.strip()
-            return header + warning + '\n' + additional + negative_cross_mark
+            try:
+                header = soup.find('div', attrs={'class':'package-status-header s2'}).text.strip()
+                additional = soup.find('div', attrs={'class':'package-status-info-box'}).text.strip()
+                return header + warning + '\n' + additional + negative_cross_mark
+            except AttributeError:
+                return 'Не удалось определить службу доставки' + ' ' + no_post_info
         
 
-# html = Load().on_local(url)
-# print(Parser().posylka(html))
+# url = ''
+# html = Load().load_page_on_local(url)
+# print(Parser().get_info_from_posylka(html))
