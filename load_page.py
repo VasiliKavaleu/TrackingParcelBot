@@ -45,6 +45,12 @@ class Load:
 
 class Parser:
     """Getting info about post item."""
+
+    result_delivery = ''
+    time_in_way = ''
+    estimated_time = ''
+    total_info = ''
+
     def get_info_from_track_ru(self, html):
         soup = BeautifulSoup(html, 'lxml')
         row_parsel = soup.select('div.show_nogroups')
@@ -58,53 +64,60 @@ class Parser:
                     info_about_po = title.h4['data-lang-ru']  
                     getting_time = block.find('div', attrs={'class': 'col-12 col-md-2 stage-timing stage-transit'})
                     time = getting_time.select_one('p.date').text
-                    self.result = self.result + time + ' ' + info_about_po + '\n'  
-        return self.result
+                    self.result_delivery = self.result_delivery + time + ' ' + info_about_po + '\n'  
+        return self.result_delivery
 
     def get_info_from_posylka(self, html):
         global item_does_not_tracking 
         soup = BeautifulSoup(html, 'lxml')
-        if soup.find('div', attrs={'class':'package-status-header s3'}):
-            header = soup.find('div', attrs={'class':'package-status-header s3'}).text.strip()
+       
+        if soup.find('div', attrs={'class':'package-info-container'}):
+            header = soup.find('div', attrs={'class':'package-status-info-box'}).text.strip()
+            self.total_info = header + chip + plane + station + '\n'
 
             delivery_info = soup.find('div', attrs={'class':'package-info-delivery'})
-            days = delivery_info.find('div', attrs={'class':'package-info-delivery-days-title'}).text.strip()
-            num_days = delivery_info.find('div', attrs={'class':'package-info-delivery-days-value'}).text.strip()
+            if delivery_info:
+                days = delivery_info.find('div', attrs={'class':'package-info-delivery-days-title'}).text.strip()
+                num_days = delivery_info.find('div', attrs={'class':'package-info-delivery-days-value'}).text.strip()
+                self.time_in_way = days + ' ' + num_days + hourglass + '\n'
 
-            estimated = delivery_info.find('div', attrs={'class':'package-info-delivery-target-title'}).text.strip()
-            estimated_time = delivery_info.find('div', attrs={'class':'package-info-delivery-target-value'}).text.strip()
+            target_time_info = soup.find('div', attrs={'class':'package-info-delivery-target'})
+            if target_time_info:
+                estimated = target_time_info.find('div', attrs={'class':'package-info-delivery-target-title'}).text.strip()
+                estimated_time = target_time_info.find('div', attrs={'class':'package-info-delivery-target-value'}).text.strip()
+                self.estimated_time = estimated + ': '+ estimated_time + postbox + '\n' + '\n'
+
+            msg_to_user = self.total_info + self.time_in_way + self.estimated_time
 
             row_parsel = soup.find('ul', attrs={'class':'package-route-list'})
-            points_of_arrivel = row_parsel.find_all('li')
-            points_of_arrivel_without_advert = points_of_arrivel[1:]
-            for point in points_of_arrivel_without_advert:
-                full_time = point.find('div', attrs='package-route-box-content').text.split()
-                month_time = full_time[1]
-                month = re.findall(r'[а-я]+', month_time)[0]
-                num_month = full_time[0]
+            if row_parsel:
+                points_of_arrivel = row_parsel.find_all('li')
+                points_of_arrivel_without_advert = points_of_arrivel[1:]
+                for point in points_of_arrivel_without_advert:
+                    full_time = point.find('div', attrs='package-route-box-content').text.split()
+                    month_time = full_time[1]
+                    month = re.findall(r'[а-я]+', month_time)[0]
+                    num_month = full_time[0]
 
-                route_info = point.find('div', attrs='package-route-info')
-                country = route_info.find('div', attrs='package-route-box-content').small.text
-                action = route_info.find('div', attrs='package-route-box-content').text.strip().strip(country)
+                    route_info = point.find('div', attrs='package-route-info')
+                    country = route_info.find('div', attrs='package-route-box-content').small.text
+                    action = route_info.find('div', attrs='package-route-box-content').text.strip().strip(country)
 
-                post_service = point.find('div', attrs='package-route-post-service').text.strip()
-                
-                self.result = self.result + num_month + ' ' + month + ' - ' + action + ' - ' + country + ' - ' + post_service + '\n'
+                    post_service = point.find('div', attrs='package-route-post-service').text.strip()
+                    
+                    point = num_month + ' ' + month + ' - ' + action + ' - ' + country + ' - ' + post_service + '\n'
 
-            total_estimated_time = estimated + ': '+ estimated_time + postbox + '\n' + '\n'
-            total_info = '\n' + header + chip + plane + station + '\n' + days + ' ' + num_days + hourglass + '\n'
-            item_does_not_tracking = 0
-            return total_info +  total_estimated_time + self.result
+                    if len(msg_to_user + point) > 4000:
+                        return msg_to_user
+                    else:
+                        msg_to_user = msg_to_user + point
+
+            return msg_to_user
+
         else:
-            item_does_not_tracking = 1
             try:
                 header = soup.find('div', attrs={'class':'package-status-header s2'}).text.strip()
                 additional = soup.find('div', attrs={'class':'package-status-info-box'}).text.strip()
                 return header + warning + '\n' + additional + negative_cross_mark
             except AttributeError:
                 return 'Не удалось определить службу доставки' + ' ' + no_post_info
-        
-
-# url = ''
-# html = Load().load_page_on_local(url)
-# print(Parser().get_info_from_posylka(html))

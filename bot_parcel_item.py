@@ -26,7 +26,6 @@ else:
 
 sources = {00:'https://posylka.net/parcel/', 11:'https://1track.ru/tracking/'}
 default_source = 00
-item_does_not_tracking = 0
 
 
 @bot.message_handler(regexp="Выбрать источник")
@@ -62,8 +61,7 @@ def callback_worker(call):
     elif call.data == "11":
         default_source = 11
         bot.send_message(call.message.chat.id, subbmit_msg)
-    else:
-        pass
+
 
 @bot.message_handler(content_types=['text'])
 def answer(message):
@@ -75,10 +73,7 @@ def answer(message):
         proccesing_msg = 'Идет сбор информации..' + page + glass + globe
         bot.send_message(message.from_user.id, proccesing_msg)
         main_result_for_user = parsel_from_ali.run()
-        if item_does_not_tracking == 0:
-            bot.send_message(message.from_user.id, main_result_for_user)
-        else:
-            bot.send_message(message.from_user.id, main_result_for_user, reply_markup=kb.result_returnd_without_info)
+        bot.send_message(message.from_user.id, main_result_for_user, reply_markup=kb.result_returnd_without_info)
     else:
         fault_masssage = 'Трек-номер не верного формата' + exclamation_emoji + 'Попробуйте еще раз ' + mobile_emoji
         bot.send_message(message.from_user.id, fault_masssage, reply_markup=kb.wrong_answer)
@@ -87,7 +82,6 @@ def answer(message):
 class GetInfo(Load, Parser):
     """Launch parser in dependence on choosen source of getting info and working mode (local, host)."""
     
-    global item_does_not_tracking
     result = ''
 
     def __init__(self, item_num):
@@ -98,21 +92,19 @@ class GetInfo(Load, Parser):
             url = sources[default_source] + self.item_num
             html_page = Load.load_page_on_local(self, url)
             if default_source == 00:
-                result = Parser.get_info_from_posylka(self, html_page)
+                self.result = Parser.get_info_from_posylka(self, html_page)
             elif default_source == 11:
-                result = Parser.get_info_from_track_ru(self, html_page)
-            else:
-                pass
+                self.result = Parser.get_info_from_track_ru(self, html_page)
         else :
             url = sources[default_source] + self.item_num
             html_page = Load.load_page_on_host(self, url)
             if default_source == 00:
-                result = Parser.get_info_from_posylka(self, html_page)
+                self.result = Parser.get_info_from_posylka(self, html_page)
             elif default_source == 11:
-                result = Parser.get_info_from_track_ru(self, html_page)
+                self.result = Parser.get_info_from_track_ru(self, html_page)
             else:
                 pass
-        return f'Результат по запросу - {self.item_num} ' + arrow + '\n' + result 
+        return f'Результат по запросу - {self.item_num} ' + arrow + '\n' + self.result 
 
 
 
