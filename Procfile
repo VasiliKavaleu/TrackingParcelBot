@@ -1,1 +1,1 @@
-web: gunicorn bot_parcel_item.py
+web: gunicorn bot_parcel_item:app
