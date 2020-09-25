@@ -1,1 +1,1 @@
-web: gunicorn bot_parcel_item:app
+web: gunicorn bot_parcel_item:server
